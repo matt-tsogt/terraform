@@ -1,0 +1,31 @@
+1.They should be as simple as possible.
+
+2.Root modules should manage very few resources and not depend heavily on many other modules or remote states.
+
+3.Don't ever design with the intention of overriding tf variables with environment variables, using -target, etc. Hard code as many values as you can into tfvars files.
+
+4.Use the lock files and pin versions everywhere. Module versions, Git tag versions, provider versions, Terraform versions.
+
+5.Use asdf to install and run the pinned version of Terraform for each root module deployed.
+
+6.Try to keep modules cohesive and loosely coupled. If updating one module or tfvars file creates plan changes in 20 different root modules, that's not great. Sometimes unavoidable, but creates a large operational burden.
+
+7.Reuse public modules. There's a shit ton of weird subtle magic knowledge you need to use a resource that isn't documented and you won't find out until something breaks.
+
+8.Test creating, changing, and then destroying, every resource. You will probably find a few need hacks to work as you expect.
+
+9.Use semver and version/release all your modules and repos. Keep Changelogs of changes.
+
+10.Keep a file in the root dir of repos that documents the owner or SME of the module and how to contact them.
+
+11.For commonly referenced variables, store them in JSON, export them with `output`s, publish the module in its own repo somewhere, version it. Modules can reference that module to get the values, pin to versions of it so unexpected changes don't blow things up.
+
+12.Use the CloudPosse Terraform modules / architecture / framework. Take the time to figure out how they work, use them. I swear you will end up reinventing it over time if you don't start now. In particular, you should apply a standard AWS tagging scheme with all your resources, which the CloudPosse modules support inherently. They also let you enable/disable functionality by variables, which is nice, cuz otherwise you have to comment out code.
+
+13.Run your Terraform from CI/CD. Really you will be doing it from both your desktop and CI/CD, but assume you'll be running in CI/CD. Once you have 3 people working on the same TF code at once, you'll need the CI/CD to not bump into each other all the time. The rule of thumb is, if it's brand new code, you can run it locally, but if it's already in production and other things depend on it, run it from ci/cd. `apply`s anyway.
+
+14.Separate modules by separation of concern; networking in network modules, clusters in cluster modules, apps in app modules, iam in security modules, etc. Also try to separate modules by AWS architectural paradigms, like "global" resources in their own modules. You'll want different teams to maintain and run their own modules independently, even though it all applies to the same AWS account/product stack.
+
+15.Don't force authentication options into the provider configs. Allow whatever's running terraform to authenticate first, and the module will just detect the auth method automatically through the provider's sdk.
+
+16.Don't make a module for a module's sake. Whereas with regular app code you might make a bunch of abstractions to try to make the code more manageable, that just makes Terraform suck more. Use the least number of abstractions possible to achieve what you want.
